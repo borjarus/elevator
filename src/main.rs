@@ -77,6 +77,12 @@ pub fn run_simulation(){
         
 
         // If next floor request in queue is satisfied, then remove from queue
+        let next_floor = floor_request[0];
+        if (location - (next_floor as f64) * floor_height).abs() < 0.01
+            && velocity.abs() < 0.01 {
+                velocity = 0.0;
+                floor_request.remove(0);
+            }
 
         // Adjust motor control to process next floor request
 
