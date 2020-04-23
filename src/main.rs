@@ -85,6 +85,53 @@ pub fn run_simulation(){
             }
 
         // Adjust motor control to process next floor request
+        let t = velocity.abs() / 1.0;
+
+        let d = t * (velocity/2.0);
+
+        let l = (location - (next_floor as f64)* floor_height).abs();
+
+        let target_acceleration = {
+            let going_up = location < (next_floor as f64) * floor_height;
+            
+            //Do not exceed maximum velocity
+            if velocity.abs() >= 5.0 {
+                if (going_up && velocity > 0.0)
+                || (!going_up && velocity < 0.0){
+                    0.0
+                } else if going_up {
+                    1.0
+                } else {
+                    -1.0
+                }
+            //if within comfortable deceleration range and moving in right direction, decelerate
+            } else if l < d && going_up == (velocity > 0.0){
+                if (going_up){
+                    -1.0
+                } else {
+                    1.0
+                }
+            //else if not at peak velocity, accelerate
+            } else {
+                if going_up {
+                    1.0
+                } else {
+                    -1.0
+                }
+            }
+        };
+
+        let gravity_adjusted_acceleration = target_acceleration + 9.8;
+        let target_force = gravity_adjusted_acceleration * 1200000.0;
+        let target_voltage = target_force / 8.0;
+        if target_voltage > 0.0 {
+            up_input_voltage = target_voltage;
+            down_input_voltage = 0.0;
+        } else {
+            up_input_voltage = 0.0;
+            down_input_voltage = target_voltage.abs();
+        }
+
 
         // Print realtime statistics
 
